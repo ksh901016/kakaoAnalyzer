@@ -16,7 +16,7 @@ public class Analyzer {
 	private String line;
 	private String name;
 	private String content;
-	private String fulltime;
+	private String[] fulltime;
 	private String[] split; // 임시저장
 	private Map<Integer, Integer> AM = new HashMap<Integer, Integer>();
 	private Map<Integer, Integer> PM = new HashMap<Integer, Integer>();
@@ -32,19 +32,29 @@ public class Analyzer {
 
 		// 파일 한줄씩 읽기
 		while ((line = bis.readLine()) != null) {
-			
+			//텍스트에 빈 줄이나, 시간만 출력된 경우 예외처리
+			if(line.equals("")|| !line.contains(","))
+				continue;
 			line1 = line.split(",");
+			//퇴장하였을시 오류방지
+			if(!line1[1].contains(":"))
+				continue;
 			getInform(line1); // user 이름과 내용 ,시간 저장
 			User user = checkUser(name); // user 객체 존재시 그 user객체 반환, 없으면 생성
-			Users.add(user);
 			user.saveInform(content); // 내용 저장
 			getTime(fulltime); // 시간 저장
 			number++;
 			System.out.println(number);
 		}
-		getPeektime(AM, PM);
+		System.out.println(getPeektime(AM, PM));
+		for(User user : Users){
+			System.out.println(user);
+			user.printWord();
+		}
 
 	}
+	
+	public Analyzer(){};
 
 	// user 이름과 내용, 시간 저장
 	private void getInform(String[] line1) {
@@ -52,7 +62,7 @@ public class Analyzer {
 			split = line1[1].split(":");
 			name = split[0].trim(); // 여백제거 이름 저장
 			content = split[1].trim(); // 여백제거 내용 저장
-			fulltime = line1[0].substring(13, 17); // 시간 저장 오후 6, 오전 7 이런식으로
+			fulltime = line1[0].split(" "); // 시간 저장 오후 6, 오전 7 이런식으로
 	}
 
 	private User checkUser(String name) {
@@ -65,17 +75,20 @@ public class Analyzer {
 		}
 		User user = new User();
 		user.setName(name);
+		Users.add(user);
 		return user;
 
 	}
 
-	private void getTime(String fulltime) {
+	private void getTime(String[] fulltime) {
 
-		String[] time = fulltime.split(" ");
-		int hour = Integer.parseInt(time[1]);
-		if (time[0].equals("오후")) {
+		String time = fulltime[3];
+		String[] time2 = fulltime[4].split(":");
+		time2[0].trim();
+		int hour = Integer.parseInt(time2[0]);
+		if (time.equals("오후")) {
 			PM.put(hour, (PM.get(hour)) + 1);
-		} else if (time[0].equals("오전")) {
+		} else if (time.equals("오전")) {
 			AM.put(hour, (PM.get(hour)) + 1);
 		}
 
@@ -107,6 +120,19 @@ public class Analyzer {
 			}
 			
 		}
-		return time +hour;
+		return time +" "+hour+"시";
 	}
+	
+
+	public void modifyList(List<String> contents, List<Integer> count) {
+		for(int i=0; i<contents.size(); i++){
+			if(count.get(i)<5){
+				count.remove(i);
+				contents.remove(i);
+			}
+		}
+		
+	}
+	
+	
 }
