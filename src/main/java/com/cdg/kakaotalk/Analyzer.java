@@ -4,7 +4,10 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +23,7 @@ public class Analyzer {
 	private String[] split; // 임시저장
 	private Map<Integer, Integer> AM = new HashMap<Integer, Integer>();
 	private Map<Integer, Integer> PM = new HashMap<Integer, Integer>();
+	private Map<String,Integer> result = new HashMap<String,Integer>();
 
 	public Analyzer(String file) throws IOException {
 
@@ -43,13 +47,18 @@ public class Analyzer {
 			User user = checkUser(name); // user 객체 존재시 그 user객체 반환, 없으면 생성
 			user.saveInform(content); // 내용 저장
 			getTime(fulltime); // 시간 저장
-			number++;
-			System.out.println(number);
 		}
+		
 		System.out.println(getPeektime(AM, PM));
 		for(User user : Users){
 			System.out.println(user);
-			user.printWord();
+			result = user.getMap();
+			Iterator it = sortByValue(result).iterator();
+			for(int i =0; i<5; i++){
+				String word = (String) it.next();
+				System.out.println(i+1+". "+ word+"\t\t"+result.get(word)+"번");
+			}
+			System.out.println();
 		}
 
 	}
@@ -120,7 +129,7 @@ public class Analyzer {
 			}
 			
 		}
-		return time +" "+hour+"시";
+		return "가장 많이 대화한 시각 : "+ time +" "+hour+"시";
 	}
 	
 
@@ -134,5 +143,22 @@ public class Analyzer {
 		
 	}
 	
+	public static List sortByValue(final Map map){
+		List<String> list = new ArrayList();
+		list.addAll(map.keySet());
+		
+		Collections.sort(list,new Comparator(){
+			
+			public int compare(Object o1, Object o2){
+				Object v1 = map.get(o1);
+				Object v2 = map.get(o2);
+				
+				return ((Comparable) v1).compareTo(v2);
+			}
+		});
+		Collections.reverse(list);
+		return list;
+		
+	}
 	
 }
